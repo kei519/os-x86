@@ -1,0 +1,3 @@
+# vim: filetype=sh
+
+nasm test.s -l test.lst -o test.o

@@ -1,0 +1,22 @@
+     1                                  ; vim: tabstop=8
+     2                                  
+     3                                  %macro v_push 1-*
+     4                                  	%rep %0
+     5                                  		push %1
+     6                                  		%rotate 1
+     7                                  	%endrep
+     8                                  %endmacro
+     9                                  
+    10                                  	v_push 1, 2, 3, 4
+    10                              <1>  %rep %0
+    10                              <1>  push %1
+    10                              <1>  %rotate 1
+    10                              <1>  %endrep
+    10 00000000 6A01                <2>  push %1
+    10                              <2>  %rotate 1
+    10 00000002 6A02                <2>  push %1
+    10                              <2>  %rotate 1
+    10 00000004 6A03                <2>  push %1
+    10                              <2>  %rotate 1
+    10 00000006 6A04                <2>  push %1
+    10                              <2>  %rotate 1

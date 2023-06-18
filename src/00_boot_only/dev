@@ -1,4 +1,6 @@
-#!/bin/bash
+# vim: filetype=sh
 
-export PATH="../../env:$PATH"
-bash
+if [ ! -n "$SET_OS_ENV" ]; then
+	export PATH="../../env:$PATH"
+	export SET_OS_ENV=true
+fi
