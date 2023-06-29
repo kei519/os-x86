@@ -1,3 +1,8 @@
 # vim: filetype=sh
 
-nasm test.s -l test.lst -o test.o
+if [ $# -lt 1 ]; then
+	echo "ファイル名を入力してください。"
+	exit 1
+fi
+
+nasm $1.s -l $1.lst -o $1.o

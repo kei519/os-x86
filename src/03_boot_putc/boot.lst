@@ -1,0 +1,40 @@
+     1                                  	BOOT_LOAD	equ	0x7C00		; ブートプログラムのロード位置
+     2                                  
+     3                                  	ORG	BOOT_LOAD
+     4                                  
+     5                                  ; エントリポイント
+     6                                  entry:
+     7 00000000 EB58                    	jmp	ipl
+     8                                  
+     9                                  	;BPM (Boot Parameter Block)
+    10 00000002 90<rept>                	times	90 - ($ - $$) db 0x90
+    11                                  
+    12                                  	;IPL (Initial Program Loader)
+    13                                  ipl:
+    14 0000005A FA                      	cli					; 割り込み禁止
+    15                                  
+    16 0000005B B80000                  	mov	ax, 0
+    17 0000005E 8ED8                    	mov	ds, ax
+    18 00000060 8EC0                    	mov	es, ax
+    19 00000062 8ED0                    	mov	ss, ax
+    20 00000064 BC007C                  	mov	sp, BOOT_LOAD
+    21                                  
+    22 00000067 FB                      	sti					; 割り込み許可
+    23                                  
+    24 00000068 8816[7800]              	mov	[BOOT.DRIVE], dl
+    25                                  
+    26 0000006C B041                    	mov	al, 'A'				; 表示する文字の指定
+    27 0000006E B40E                    	mov	ah, 0x0E			; テレタイプ式1文字出力
+    28 00000070 B70A                    	mov	bh, 10				; ページ番号
+    29 00000072 B300                    	mov	bl, 0				; 文字色
+    30 00000074 CD10                    	int	0x10				; BIOSのビデオサービス
+    31                                  
+    32 00000076 EBFE                    	jmp	$	; 無限ループ
+    33                                  
+    34                                  ALIGN 2, db 0
+    35                                  BOOT:						; ブートドライブに関する情報
+    36 00000078 0000                    .DRIVE		dw 0				; ドライブ番号
+    37                                  
+    38                                  ; ブートフラグ
+    39 0000007A 00<rept>                	times 510 - ($ - $$) db 0x00
+    40 000001FE 55AA                    	db 0x55, 0xAA
