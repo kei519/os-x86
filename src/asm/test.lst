@@ -1,22 +1,142 @@
      1                                  ; vim: tabstop=8
      2                                  
-     3                                  %macro v_push 1-*
-     4                                  	%rep %0
-     5                                  		push %1
-     6                                  		%rotate 1
-     7                                  	%endrep
-     8                                  %endmacro
-     9                                  
-    10                                  	v_push 1, 2, 3, 4
-    10                              <1>  %rep %0
-    10                              <1>  push %1
-    10                              <1>  %rotate 1
-    10                              <1>  %endrep
-    10 00000000 6A01                <2>  push %1
-    10                              <2>  %rotate 1
-    10 00000002 6A02                <2>  push %1
-    10                              <2>  %rotate 1
-    10 00000004 6A03                <2>  push %1
-    10                              <2>  %rotate 1
-    10 00000006 6A04                <2>  push %1
-    10                              <2>  %rotate 1
+     3                                  ;;;  Initial boot loader
+     4                                  ;;;
+     5                                  org     0x7c00
+     6 00000000 EB32                            jmp     start
+     7                                  
+     8                                  ;;; print a message
+     9                                  print:
+    10 00000002 B40E                            mov     ah,0x0e
+    11                                  .loop:
+    12 00000004 8A07                            mov     al,[bx]
+    13 00000006 3C00                            cmp     al,0x00
+    14 00000008 7501                            jnz     .next
+    15 0000000A C3                              ret
+    16                                  .next:
+    17 0000000B CD10                            int     10h             ; BIOS call
+    18 0000000D 43                              inc     bx
+    19 0000000E EBF4                            jmp     .loop
+    20                                  
+    21                                  ;;; read one cyliner
+    22                                  ;;; ax: destination address / 0x10
+    23                                  ;;; ch: cyliner (0..)
+    24                                  read_cylinder:
+    25 00000010 8EC0                            mov     es,ax           ; destination address = [es:bx]
+    26 00000012 BB0000                          mov     bx,0
+    27 00000015 B200                            mov     dl,0            ; drive 0
+    28 00000017 B600                            mov     dh,0            ; head 0
+    29 00000019 B101                            mov     cl,1            ; from sector 1
+    30 0000001B B402                            mov     ah,0x02
+    31 0000001D B012                            mov     al,18           ; all 18 sectors
+    32 0000001F CD13                            int     0x13            ; BIOS call
+    33 00000021 7307                            jnc     .next
+    34 00000023 BB[BD00]                        mov     bx,read_err
+    35 00000026 E8D9FF                          call    print
+    36 00000029 F4                              hlt                     ; error
+    37                                  .next:
+    38 0000002A C3                              ret
+    39                                  
+    40                                  ;;; wait until the keyboard is ready
+    41                                  wait_kdb:
+    42 0000002B E464                            in      al,0x64
+    43 0000002D 2402                            and     al,0x02
+    44 0000002F E460                            in      al,0x60
+    45 00000031 75F8                            jnz     wait_kdb
+    46 00000033 C3                              ret
+    47                                  
+    48                                  ;;; initial loader
+    49                                  ;;;
+    50                                  start:
+    51                                          ;; wait until any key is pressed
+    52 00000034 BB[A400]                        mov     bx,press_key
+    53 00000037 E8C8FF                          call    print
+    54 0000003A B400                            mov     ah,0
+    55 0000003C CD16                            int     0x16
+    56                                  
+    57                                          ;; initialize segment registers
+    58 0000003E 8CC8                            mov     ax,cs
+    59 00000040 8ED8                            mov     ds,ax
+    60 00000042 8EC0                            mov     es,ax
+    61 00000044 B80060                          mov     ax,0x6000
+    62 00000047 89C4                            mov     sp,ax
+    63                                  
+    64 00000049 B80008                          mov     ax,0x0800       ; address
+    65 0000004C B500                            mov     ch,0            ; cyliner 0
+    66 0000004E E8BFFF                          call    read_cylinder
+    67                                  
+    68 00000051 B0FF                            mov     al,0xff         ; disable interrupt
+    69 00000053 E621                            out     0x21,al
+    70 00000055 90                              nop
+    71 00000056 E6A1                            out     0xa1,al
+    72 00000058 FA                              cli
+    73                                  
+    74 00000059 E8CFFF                          call    wait_kdb        ; enable A20
+    75 0000005C B0D1                            mov     al,0xd1
+    76 0000005E E664                            out     0x64,al
+    77 00000060 E8C8FF                          call    wait_kdb
+    78 00000063 B0DF                            mov     al,0xdf
+    79 00000065 E660                            out     0x60,al
+    80 00000067 E8C1FF                          call    wait_kdb
+    81                                  
+    82 0000006A B013                            mov     al,0x13         ; VGA 320x200, 8bit color
+    83 0000006C B400                            mov     ah,0x00
+    84 0000006E CD10                            int     0x10            ; BIOS call
+    85                                  
+    86                                          ;; initialize GDT
+    87 00000070 BB[DF00]                        mov     bx,gdt_ptr
+    88 00000073 0F0117                          lgdt    [bx]            ; set GDT
+    89                                  
+    90                                          ;; switch to 32bit protected mode
+    91 00000076 0F20C0                          mov     eax,cr0
+    92 00000079 6625FFFFFF7F                    and     eax,0x7fffffff  ; reset PG (paging)
+    93 0000007F 6683C801                        or      eax,1           ; set PE (protected mode enagble)
+    94 00000083 0F22C0                          mov     cr0,eax
+    95 00000086 EB00                            jmp     .next           ; clear the pipe line
+    96                                  .next:
+    97 00000088 B81000                          mov     ax,0x10         ; ds,es,ss := 0x10
+    98 0000008B 8ED8                            mov     ds,ax
+    99 0000008D 8EC0                            mov     es,ax
+   100 0000008F 8ED0                            mov     ss,ax
+   101 00000091 66B8FFFF0000                    mov     eax,0x0000ffff  ; 64K
+   102 00000097 6689C4                          mov     esp,eax         ; initialize the stack pointer
+   103                                  
+   104                                          ;;
+   105                                          bits    32
+   106                                          ;;
+   107 0000009A EA                              db      0xea            ; jump instruction (with setting cs)
+   108 0000009B [9F00]                          dw      .next2
+   109 0000009D 0800                            dw      0x08            ; cs := 0x08
+   110                                  .next2:
+   111                                          ;; jump to boot2.c
+   112 0000009F E9(00820000)                    jmp dword 0x8200
+   113                                  
+   114                                  ;;; messages
+   115                                  press_key:
+   116 000000A4 507265737320616E79-             db      "Press any key to boot...", 0x00
+   116 000000AD 206B657920746F2062-
+   116 000000B6 6F6F742E2E2E00     
+   117                                  read_err:
+   118 000000BD 464444206572726F72-             db      "FDD error", 0x00
+   118 000000C6 00                 
+   119                                  
+   120                                  ;;; GDT (Global Descriptor Table) entries
+   121                                  gdt_data:
+   122                                          ;; segment 0x00
+   123 000000C7 0000000000000000                db      0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00
+   124                                          ;; segment 0x08
+   125                                          ;; limit 0xfffff, base 0x0000, access 0x409a (32bit, privilege, code)
+   126 000000CF FFFF0000009A4F00                db      0xff,0xff,0x00,0x00, 0x00,0x9a,0x4f,0x00
+   127                                          ;; segment 0x10
+   128                                          ;; limit 0xfffff, base 0x0000, access 0x4092 (32bit, privilege, data)
+   129 000000D7 FFFF000000924F00                db      0xff,0xff,0x00,0x00, 0x00,0x92,0x4f,0x00
+   130                                  
+   131                                  gdt_ptr:
+   132 000000DF 1700                            dw      0x0017          ; limit
+   133 000000E1 [C700]                          dw      gdt_data        ; lower 16 bits of the GDT address
+   134 000000E3 0000                            dw      0x0000          ; higher 16 bits
+   135                                  
+   136                                  ;;; this is a boot sector.
+   137 000000E5 00<rept>                        times   510-($-$$) DB 0
+   138 000001FE 55AA                            dw      0xaa55          ; magic number
+   139                                  
