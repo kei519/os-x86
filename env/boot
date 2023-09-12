@@ -3,13 +3,4 @@
 # https://stackoverflow.com/questions/28811811/how-to-use-gdb-in-16-bit-mode
 # https://tomiylab.com/2021/09/gdb-mikanos/
 
-# -s: `-gdb tcp::1234`と同じ
-# -S: デバッガからコマンドを受け取るまで起動しない
-qemu-system-i386 -s -S -rtc base=localtime -drive file=boot.img,format=raw -boot order=c &
-gdb -ex 'target remote localhost:1234' \
-	-ex 'set disassembly-flavor intel' \
-	-ex 'disp/5i $cs * 16 + $pc' \
-	-ex 'disp $eflags' \
-	-ex 'break *0x7c00' \
-	-ex 'continue'
-	#-ex 'set architecture i386' \
+qemu-system-i386 -rtc base=localtime -drive file=boot.img,format=raw -boot order=c

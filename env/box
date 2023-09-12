@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 # vim: filetype=sh
 
-bochsdbg -q -f ../../env/bochsrc.bxrc
+bochs -q -f ../../env/bochsrc.bxrc
