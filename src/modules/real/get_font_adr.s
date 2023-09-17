@@ -20,7 +20,7 @@ get_font_adr:	; void get_font_adr(adr)
 
 	; フォントアドレスを保存
 	mov	[si + 0], es		; adr[0] = セグメント
-	mov	[si + 2], bx		; adr[1] = オフセット
+	mov	[si + 2], bp		; adr[1] = オフセット
 
 	; レジスタの復帰
 	pop	bp
