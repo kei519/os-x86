@@ -8,8 +8,9 @@
 qemu-system-i386 -s -S -rtc base=localtime -drive file=boot.img,format=raw -boot order=c &
 gdb -ex 'target remote localhost:1234' \
 	-ex 'set disassembly-flavor intel' \
-	-ex 'disp/5i $cs * 16 + $pc' \
+	-ex 'disp/5i $pc' \
 	-ex 'disp $eflags' \
 	-ex 'break *0x7c00' \
 	-ex 'continue'
+	# -ex 'disp/5i $cs * 16 + $pc' \
 	#-ex 'set architecture i386' \
