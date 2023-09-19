@@ -84,7 +84,7 @@ vram_font_copy:	; vram_font_copy(font, vram, plane, color)
 	; フォントマスクの作成
 	lodsb					; AL = *ESI++
 	mov	ah, al				; AH = AL
-	not	ah				; AH = !フォント（ビット反転）
+	not	ah				; AH = ~フォント（ビット反転）
 
 	; 前景色
 	and	al, dl				; AL = 前景色 & フォント
@@ -92,10 +92,10 @@ vram_font_copy:	; vram_font_copy(font, vram, plane, color)
 	; 背景色
 	test	ebx, 0x0010			; if (透過モード)
 	jz	.11F
-	and	ah, [edi]			; AH = !フォント & VRAM
+	and	ah, [edi]			; AH = ~フォント & VRAM
 	jmp	.11E
 .11F:						; else
-	and	ah, dh				; AH = !フォント & 背景色
+	and	ah, dh				; AH = ~フォント & 背景色
 .11E:
 
 	; 前景色と背景色を合成
@@ -113,6 +113,44 @@ vram_font_copy:	; vram_font_copy(font, vram, plane, color)
 	pop	esi
 	pop	edx
 	pop	ecx
+	pop	ebx
+	pop	eax
+
+	; スタックフレームの破棄
+	mov	esp, ebp
+	pop	ebp
+
+	ret
+
+vram_bit_copy:	; vram_bit_copy(pattern, vram, plane, color)
+	; スタックフレームの構築
+	push	ebp
+	mov	ebp, esp
+
+	; レジスタの保存
+	push	eax
+	push	ebx
+	push	edi
+
+	mov	edi, [ebp +12]			; EDI = VRAMアドレス
+	movzx	eax, byte [ebp +16]		; EAX = プレーン（ビット指定）
+	movzx	ebx, word [ebp +20]		; EBX = 表示色
+
+	test	bl, al				; ZF = (前景色 & プレーン)
+	setz	bl				; BL = ZF ? 0x01 : 0x00
+	dec	bl				; BL = ZF ? 0x00 : 0xFF
+
+	mov	al, [ebp + 8]			; AL = 出力ビットパターン
+	mov	ah, al
+	not	ah				; AH = ~AL;
+
+	and	ah, [edi]			; AH = 現在値 & ~出力ビットパターン
+	and	al, bl				; AL = 表示色 & 出力ビットパターン
+	or	al, ah				; AL |= AH
+	mov	[edi], al			; VRAMに書き込む
+
+	; レジスタの復帰
+	pop	edi
 	pop	ebx
 	pop	eax
 
