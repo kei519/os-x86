@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ $# -ne 1 ]; then
+	exit 1
+fi
+
+mkdir $1
+
+if [ -f boot.s ]; then
+	cp boot.s $1
+fi
+
+if [ -f kernel.s ]; then
+	cp kernel.s $1
+fi
