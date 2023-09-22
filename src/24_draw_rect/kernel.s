@@ -60,6 +60,11 @@ kernel:
 	cdecl	draw_line, 100, 100, 100, 200, 0x0F
 	cdecl	draw_line, 100, 100,   0, 100, 0x0F
 
+	; 矩形を描画
+	cdecl	draw_rect, 100, 100, 200, 200, 0x03
+	cdecl	draw_rect, 400, 250, 150, 150, 0x05
+	cdecl	draw_rect, 350, 400, 300, 100, 0x06
+
 	; 処理の終了
 	jmp	$
 
@@ -76,6 +81,7 @@ FONT_ADR:	dd 0
 %include	"../modules/protect/draw_color_bar.s"
 %include	"../modules/protect/draw_pixel.s"
 %include	"../modules/protect/draw_line.s"
+%include	"../modules/protect/draw_rect.s"
 
 ; パディング
 	times KERNEL_SIZE - ($ - $$)	db 0
