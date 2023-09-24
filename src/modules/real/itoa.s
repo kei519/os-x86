@@ -37,10 +37,10 @@ itoa:	; void itoa(num, buff, size, radix, flags)
 	cmp	ax, 0
 .22Q:	jge	.22F
 	neg	ax
-	mov	[si], word '-'
+	mov	[si], byte '-'
 	jmp	.22E
 .22F:
-	mov	[si], word '+'
+	mov	[si], byte '+'
 .22E:
 	dec	cx
 .20E:
