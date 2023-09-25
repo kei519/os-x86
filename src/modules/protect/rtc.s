@@ -4,7 +4,6 @@ rtc_get_time:	; bool rtc_get_time(dst)
 	mov	ebp, esp
 
 	; レジスタの保存
-	push	eax
 	push	ebx
 
 	mov	al, 0x0A			; AL = 0x0A
@@ -36,7 +35,6 @@ rtc_get_time:	; bool rtc_get_time(dst)
 .10E:
 	; レジスタの復帰
 	pop	ebx
-	pop	eax
 
 	; スタックフレームの破棄
 	mov	esp, ebp
