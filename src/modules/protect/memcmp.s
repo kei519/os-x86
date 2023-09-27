@@ -1,7 +1,7 @@
 memcmp:
 	; スタックフレームの構築
 	push	ebp
-	mov	esp, ebp
+	mov	ebp, esp
 
 	; レジスタの保存
 	push	ecx
