@@ -13,3 +13,5 @@ fi
 temp=$(mktemp)
 echo $__str | sed -E 's/0x([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})/0x\2 0x\1/g' | xxd -r -p > $temp
 objdump -D -b binary -m i8086 -M intel $temp >&2
+
+trap 'rm "$temp"' EXIT

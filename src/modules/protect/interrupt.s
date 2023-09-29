@@ -1,4 +1,5 @@
 int_stop:
+; 割り込み時に呼び出されたIPなどを表示し、プログラムを終了する
 	sti					; 割り込み許可
 
 	; EAX で示される文字列を表示
@@ -36,6 +37,7 @@ int_stop:
 .p4	db "-------- ", 0
 
 int_default:
+; 割り込み時のデフォルトの処理
 	pushf					; EFLAGS
 	push	cs
 	push	int_stop			; スタック表示処理
