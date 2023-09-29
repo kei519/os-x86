@@ -29,6 +29,7 @@ int_rtc:	; int_rtc(flag)
 	iret					; 割り込み処理の終了
 
 rtc_int_en:
+; RTCの割り込み有効化
 	; スタックフレームの構築
 	push	ebp
 	mov	ebp, esp
