@@ -13,3 +13,15 @@ fi
 if [ -f kernel.s ]; then
 	cp kernel.s $1
 fi
+
+if [ -f descriptor.s ]; then
+	cp -r descriptor.s $1
+fi
+
+if [ -d modules ]; then
+	cp -r modules $1
+fi
+
+if [ -d tasks ]; then
+	cp -r tasks $1
+fi
