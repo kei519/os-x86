@@ -18,7 +18,7 @@ struc drive
 	.sect	resw	1		; セクタ
 endstruc
 
-%macro	set_vect 1-*
+%macro	set_vect 2-3
 	push	eax
 	push	edi
 
@@ -51,7 +51,7 @@ struc ring_buff
 	.item	resb	RING_ITEM_SIZE		; バッファ
 endstruc
 
-%macro	set_desc 2-*
+%macro	set_desc 2-3
 	push	eax
 	push	edi
 
@@ -67,4 +67,6 @@ endstruc
 	mov	[edi + 4], al			; ベース（[23:16]）
 	mov	[edi + 7], ah			; ベース（[31:24]）
 
-	pop
+	pop	edi
+	pop	eax
+%endmacro
