@@ -14,6 +14,23 @@ kernel:
 	add	eax, ebx			; EAX = セグメント << 4 + オフセット
 	mov	[FONT_ADR], eax			; *FONT_ADR = EAX
 
+	; TSSディスクリプタの設定
+	set_desc	GDT.tss_0, TSS_0	; タスク0用TSSの設定
+	set_desc	GDT.tss_1, TSS_1	; タスク1用TSSの設定
+
+	; LDTの設定
+	set_desc	GDT.ldt, LDT, word LDT_LIMIT
+
+	; GDTをロード（再設定）
+	lgdt	[GDTR]				; グローバルディスクリプタテーブルをロード
+
+	; スタックの設定
+	mov	esp, SP_TASK_0			; タスク0用のスタックを設定
+
+	; タスクレジスタの初期化
+	mov	ax, SS_TASK_0
+	ltr	ax				; タスクレジスタの設定
+
 	; 初期化
 	cdecl	init_int			; 割り込みベクタの初期化
 	cdecl	init_pic			; 割り込みコントローラの初期化
@@ -40,6 +57,9 @@ kernel:
 
 	; 文字列の表示
 	cdecl	draw_str, 25, 14, 0x010F, .s0
+
+	; タスクの呼び出し
+	call	SS_TASK_1:0			; タスクの呼び出し
 
 .10L:
 	; 時刻の表示
@@ -88,6 +108,8 @@ RTC_TIME:	dd 0
 %include	"./modules/int_timer.s"
 %include	"../modules/protect/timer.s"
 %include	"../modules/protect/draw_rotation_bar.s"
+%include	"./descriptor.s"
+%include	"./tasks/task_1.s"
 
 ; パディング
 	times KERNEL_SIZE - ($ - $$)	db 0
