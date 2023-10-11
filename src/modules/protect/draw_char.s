@@ -23,6 +23,10 @@ draw_char:	; draw_char(col, raw, color, ch)
 	; 1文字分のフォントを出力
 	movzx	ebx, word [ebp +16]		; EBX = 表示色
 
+%ifdef	USE_TEST_AND_SET
+	cdecl	test_and_set, IN_USE		; TEST_AND_SET(IN_USE) // リソースの空き待ち
+%endif
+
 	cdecl	vga_set_read_plane, 0x03	; 読み込みプレーン：輝度（I）
 	cdecl	vga_set_write_plane, 0x08	; 書き込みプレーン：輝度（I）
 	cdecl	vram_font_copy, esi, edi, 0x08, ebx
@@ -39,6 +43,10 @@ draw_char:	; draw_char(col, raw, color, ch)
 	cdecl	vga_set_write_plane, 0x01	; 書き込みプレーン：青（B）
 	cdecl	vram_font_copy, esi, edi, 0x01, ebx
 
+%ifdef	USE_TEST_AND_SET
+	mov	[IN_USE], dword 0		; 変数のクリア
+%endif
+
 	; レジスタの復帰
 	pop	edi
 	pop	esi
@@ -49,3 +57,6 @@ draw_char:	; draw_char(col, raw, color, ch)
 	pop	ebp
 
 	ret
+
+ALIGN 4, db 0
+IN_USE: dd  0
