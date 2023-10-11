@@ -23,7 +23,11 @@ draw_str:	; draw_str(col, row, color, p)
 	cmp	al, 0
 	je	.10E
 
+%ifdef	USE_SYSTEM_CALL
+	int	0x81				; sys_call(1, X, Y, 色, 文字)
+%else
 	cdecl	draw_char, ecx, edx, ebx, eax
+%endif
 
 	; 表示位置更新
 	inc	ecx				; ECX++
