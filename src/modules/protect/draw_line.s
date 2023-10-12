@@ -76,7 +76,18 @@ draw_line:	; draw_line(X0, Y0, X1, Y1, color)
 .30E:
 	; 線を描画
 .50L:
+%ifdef	USE_SYSTEM_CALL
+	push	ecx
+
+	mov	ebx, dword [ebp +24]		; EBX = 表示色
+	mov	ecx, dword [ebp - 8]		; ECX = X座標
+	mov	edx, dword [ebp -20]		; EDX = Y座標
+	int	0x82
+
+	pop	ecx
+%else
 	cdecl	draw_pixel, dword [ebp - 8], dword [ebp -20], dword [ebp +24]	; 点の描画
+%endif
 
 	; 基準軸更新
 	mov	eax, [esi - 8]			; EAX = 基準軸増分
