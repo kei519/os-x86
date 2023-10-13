@@ -18,7 +18,7 @@ memcpy:
 	; ----------------------------------------
 	cld
 	mov	edi, [ebp + 8]
-	mov	edi, [ebp + 12]
+	mov	esi, [ebp + 12]
 	mov	ecx, [ebp + 16]
 
 	rep movsb
