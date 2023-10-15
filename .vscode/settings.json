@@ -1,3 +1,6 @@
 {
-	"asm-code-lens.excludeFiles": "src/[0-9]*/**"
+	"asm-code-lens.excludeFiles": "src/[0-9]*/**",
+	"files.exclude": {
+		"**/*.bin": true,
+	}
 }
