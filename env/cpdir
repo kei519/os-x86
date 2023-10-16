@@ -15,7 +15,11 @@ if [ -f kernel.s ]; then
 fi
 
 if [ -f descriptor.s ]; then
-	cp -r descriptor.s $1
+	cp descriptor.s $1
+fi
+
+if [ -f fat.s ]; then
+	cp fat.s $1
 fi
 
 if [ -d modules ]; then
