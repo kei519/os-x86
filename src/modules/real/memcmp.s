@@ -1,7 +1,7 @@
 memcmp:
 	; スタックフレームの構築
 	push	bp
-	mov	sp, bp
+	mov	bp, sp
 
 	; レジスタの保存
 	push	cx
@@ -21,7 +21,7 @@ memcmp:
 	jmp	.10E
 .10F:
 	mov	ax, -1
-.10E
+.10E:
 	; レジスタの復帰
 	pop	di
 	pop	si
